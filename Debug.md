@@ -1,7 +1,7 @@
 Debug
 =============
 
-<p>The latest version of the script added support for debugging using the web console. If the script doesn't work, the button disappears or you find other issues, use the instructions below to send some helpful when reporting bugs.</p>
+<p>If the script/extension doesn't work, the button disappears or you find other issues, use the instructions below to send some helpful information when reporting bugs.</p>
 
 <p><b>Firefox</b></p>
 

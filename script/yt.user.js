@@ -3,8 +3,8 @@
 // @description Adds a button that lets you download YouTube videos.
 // @homepageURL https://github.com/gantt/downloadyoutube
 // @author Gantt
-// @version 1.7.22
-// @date 2014-07-15
+// @version 1.7.23
+// @date 2014-07-23
 // @namespace http://googlesystem.blogspot.com
 // @include http://www.youtube.com/*
 // @include https://www.youtube.com/*
@@ -590,43 +590,49 @@ function run() {
   }
   
   function findSignatureCode(sourceCode) {
-    var functionName = findMatch(sourceCode, /\.signature\s*=\s*([a-zA-Z_$][0-9a-zA-Z_$]*)\([a-zA-Z_$][0-9a-zA-Z_$]*\)/);
-    functionName=functionName.replace('$','\\$');
-    if (functionName == null) return setPref(STORAGE_CODE, 'error');
-    debug('DYVAM - Info: function ' + functionName);
-    var regCode = new RegExp('function ' + functionName +
-    '\\s*\\(\\w+\\)\\s*{\\w+=\\w+\\.split\\(""\\);(.+);return \\w+\\.join');
+    var signatureFunctionName = findMatch(sourceCode, 
+    /\.signature\s*=\s*([a-zA-Z_$][\w$]*)\([a-zA-Z_$][\w$]*\)/);
+    if (signatureFunctionName == null) return setPref(STORAGE_CODE, 'error');
+    signatureFunctionName=signatureFunctionName.replace('$','\\$');    
+    var regCode = new RegExp('function \\s*' + signatureFunctionName +
+    '\\s*\\([\\w$]*\\)\\s*{[\\w$]*=[\\w$]*\\.split\\(""\\);(.+);return [\\w$]*\\.join');
     var functionCode = findMatch(sourceCode, regCode);
-    debug('DYVAM - Info: functioncode ' + functionCode);            
+    debug('DYVAM - Info: signaturefunction ' + signatureFunctionName + ' -- ' + functionCode);            
     if (functionCode == null) return setPref(STORAGE_CODE, 'error');
     
-    var regReverseFunction = new RegExp('(\\w*)\\s*:\\s*function\\s*\\(\\s*\\w*\\s*\\)\\s*{\\s*return\\s*\\w*\\.reverse\\s*\\(\\s*\\)\\s*}');
-    var reverseFunctionName = findMatch(sourceCode, regReverseFunction);
+    var reverseFunctionName = findMatch(sourceCode, 
+    /([\w$]*)\s*:\s*function\s*\(\s*[\w$]*\s*\)\s*{\s*return\s*[\w$]*\.reverse\s*\(\s*\)\s*}/);
     debug('DYVAM - Info: reversefunction ' + reverseFunctionName);
-    
-    var regSliceFunction = new RegExp('(\\w*)\\s*:\\s*function\\s*\\(\\s*\\w*\\s*,\\s*\\w*\\s*\\)\\s*{\\s*return\\s*\\w*\\.slice\\(.+\\)\\s*}');
-    var sliceFunctionName = findMatch(sourceCode, regSliceFunction);
+    if (reverseFunctionName) reverseFunctionName=reverseFunctionName.replace('$','\\$');        
+    var sliceFunctionName = findMatch(sourceCode, 
+    /([\w$]*)\s*:\s*function\s*\(\s*[\w$]*\s*,\s*[\w$]*\s*\)\s*{\s*return\s*[\w$]*\.slice\(.+\)\s*}/);
     debug('DYVAM - Info: slicefunction ' + sliceFunctionName);
+    if (sliceFunctionName) sliceFunctionName=sliceFunctionName.replace('$','\\$');    
     
-    var regSlice = new RegExp('slice\\s*\\(\\s*(.+)\\s*\\)');
-    var regSliceVar = sliceFunctionName && new RegExp(sliceFunctionName+'\\s*\\(\\s*.+([0-9]+)\\s*\\)');
-    var regSwap = new RegExp('\\w+\\s*\\(\\s*\\w+\\s*,\\s*([0-9]+)\\s*\\)');
-    var regInline = new RegExp('\\w+\\[0\\]\\s*=\\s*\\w+\\[([0-9]+)\\s*%\\s*\\w+\\.length\\]');
+    var regSlice = new RegExp('\\.(?:'+'slice'+(sliceFunctionName?'|'+sliceFunctionName:'')+
+    ')\\s*\\(\\s*(?:[a-zA-Z_$][\\w$]*\\s*,)?\\s*([0-9]+)\\s*\\)'); // .slice(5) sau .Hf(a,5)
+    var regReverse = new RegExp('\\.(?:'+'reverse'+(reverseFunctionName?'|'+reverseFunctionName:'')+
+    ')\\s*\\([^\\)]*\\)');  // .reverse() sau .Gf(a,45)
+    var regSwap = new RegExp('[\\w$]+\\s*\\(\\s*[\\w$]+\\s*,\\s*([0-9]+)\\s*\\)');
+    var regInline = new RegExp('[\\w$]+\\[0\\]\\s*=\\s*[\\w$]+\\[([0-9]+)\\s*%\\s*[\\w$]+\\.length\\]');
     var functionCodePieces=functionCode.split(';');
     var decodeArray=[], signatureLength=81;
     for (var i=0; i<functionCodePieces.length; i++) {
       functionCodePieces[i]=functionCodePieces[i].trim();
-      if (functionCodePieces[i].length==0) {
-      } else if (functionCodePieces[i].indexOf('slice') >= 0) { // slice
-        var slice=findMatch(functionCodePieces[i], regSlice);
-        slice=parseInt(slice, 10);
+      var codeLine=functionCodePieces[i];
+      if (codeLine.length>0) {
+        var arrSlice=codeLine.match(regSlice);
+        var arrReverse=codeLine.match(regReverse);
+        debug(i+': '+codeLine+' --'+(arrSlice?' slice length '+arrSlice.length:'') +' '+(arrReverse?'reverse':''));
+        if (arrSlice && arrSlice.length >= 2) { // slice
+        var slice=parseInt(arrSlice[1], 10);
         if (isInteger(slice)){ 
           decodeArray.push(-slice);
           signatureLength+=slice;
         } else return setPref(STORAGE_CODE, 'error');
-      } else if (functionCodePieces[i].indexOf('reverse') >= 0) {
+      } else if (arrReverse && arrReverse.length >= 1) { // reverse
         decodeArray.push(0);
-      } else if (functionCodePieces[i].indexOf('[0]') >= 0) {
+      } else if (codeLine.indexOf('[0]') >= 0) { // inline swap
           if (i+2<functionCodePieces.length &&
           functionCodePieces[i+1].indexOf('.length') >= 0 &&
           functionCodePieces[i+1].indexOf('[0]') >= 0) {
@@ -635,28 +641,21 @@ function run() {
             decodeArray.push(inline);
             i+=2;
           } else return setPref(STORAGE_CODE, 'error');
-      } else if (sliceFunctionName && functionCodePieces[i].indexOf('.'+sliceFunctionName) >= 0) {
-        var slice=findMatch(functionCodePieces[i], regSliceVar);
-        slice=parseInt(slice, 10);
-        if (isInteger(slice)){ 
-          decodeArray.push(-slice);
-          signatureLength+=slice;
-        } else return setPref(STORAGE_CODE, 'error');
-      } else if (reverseFunctionName && functionCodePieces[i].indexOf('.'+reverseFunctionName) >= 0) {
-        decodeArray.push(0);
-      } else if (functionCodePieces[i].indexOf(',') >= 0) {
-        var swap=findMatch(functionCodePieces[i], regSwap);      
+      } else if (codeLine.indexOf(',') >= 0) { // swap
+        var swap=findMatch(codeLine, regSwap);      
         swap=parseInt(swap, 10);
         if (isInteger(swap)){
           decodeArray.push(swap);
         } else return setPref(STORAGE_CODE, 'error');
       } else return setPref(STORAGE_CODE, 'error');
+      }
     }
     
     if (decodeArray) {
       setPref(STORAGE_URL, scriptURL);
       setPref(STORAGE_CODE, decodeArray.toString());
       DECODE_RULE[signatureLength]=decodeArray;
+      debug('DYVAM - Info: signature '+decodeArray.toString()+' '+scriptURL);
       // update download links and add file sizes
       for (var i=0;i<downloadCodeList.length;i++) {        
         var elem=document.getElementById(LISTITEM_ID+downloadCodeList[i].format);
@@ -684,8 +683,7 @@ function run() {
   function fetchSignatureScript(scriptURL) {
     var storageURL=getPref(STORAGE_URL);
     var storageCode=getPref(STORAGE_CODE);
-    // hack for wrong code, remove this
-    if (storageCode=='15,44,66,24,3,51,2,50') storageCode=null;
+    if (!(/,0,|^0,|,0$|\-/.test(storageCode))) storageCode=null; // hack for only positive items
     if (storageCode && isValidSignatureCode(storageCode) && storageURL &&
         scriptURL.replace(/^https?/i,'')==storageURL.replace(/^https?/i,'')) return;
     try {
@@ -714,6 +712,7 @@ function run() {
         if (arr[i]<0) signatureLength-=arr[i];
       }
       rules[signatureLength]=arr;
+      debug('DYVAM - Info: signature '+arr.toString()+' '+scriptURL);
     }
     return rules;
   }

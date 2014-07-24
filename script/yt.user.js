@@ -3,8 +3,8 @@
 // @description Adds a button that lets you download YouTube videos.
 // @homepageURL https://github.com/gantt/downloadyoutube
 // @author Gantt
-// @version 1.7.23
-// @date 2014-07-23
+// @version 1.7.24
+// @date 2014-07-24
 // @namespace http://googlesystem.blogspot.com
 // @include http://www.youtube.com/*
 // @include https://www.youtube.com/*
@@ -601,11 +601,11 @@ function run() {
     if (functionCode == null) return setPref(STORAGE_CODE, 'error');
     
     var reverseFunctionName = findMatch(sourceCode, 
-    /([\w$]*)\s*:\s*function\s*\(\s*[\w$]*\s*\)\s*{\s*return\s*[\w$]*\.reverse\s*\(\s*\)\s*}/);
+    /([\w$]*)\s*:\s*function\s*\(\s*[\w$]*\s*\)\s*{\s*(?:return\s*)?[\w$]*\.reverse\s*\(\s*\)\s*}/);
     debug('DYVAM - Info: reversefunction ' + reverseFunctionName);
     if (reverseFunctionName) reverseFunctionName=reverseFunctionName.replace('$','\\$');        
     var sliceFunctionName = findMatch(sourceCode, 
-    /([\w$]*)\s*:\s*function\s*\(\s*[\w$]*\s*,\s*[\w$]*\s*\)\s*{\s*return\s*[\w$]*\.slice\(.+\)\s*}/);
+    /([\w$]*)\s*:\s*function\s*\(\s*[\w$]*\s*,\s*[\w$]*\s*\)\s*{\s*(?:return\s*)?[\w$]*\.(?:slice|splice)\(.+\)\s*}/);
     debug('DYVAM - Info: slicefunction ' + sliceFunctionName);
     if (sliceFunctionName) sliceFunctionName=sliceFunctionName.replace('$','\\$');    
     

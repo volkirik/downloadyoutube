@@ -3,8 +3,8 @@
 // @description Adds a button that lets you download YouTube videos.
 // @homepageURL https://github.com/gantt/downloadyoutube
 // @author Gantt
-// @version 1.7.24
-// @date 2014-07-24
+// @version 1.7.25
+// @date 2014-08-12
 // @namespace http://googlesystem.blogspot.com
 // @include http://www.youtube.com/*
 // @include https://www.youtube.com/*
@@ -644,7 +644,7 @@ function run() {
       } else if (codeLine.indexOf(',') >= 0) { // swap
         var swap=findMatch(codeLine, regSwap);      
         swap=parseInt(swap, 10);
-        if (isInteger(swap)){
+        if (isInteger(swap) && swap>0){
           decodeArray.push(swap);
         } else return setPref(STORAGE_CODE, 'error');
       } else return setPref(STORAGE_CODE, 'error');
@@ -736,6 +736,9 @@ function run() {
     if (arr) {
       var sig2=decode(sig, arr);
       if (sig2 && sig2.length==81) return sig2;
+    } else {
+      setPref(STORAGE_URL, '');
+      setPref(STORAGE_CODE, '');
     }
     return sig; 
   }  

@@ -2,9 +2,9 @@ Download YouTube Videos as MP4
 ===============
 <div id="full_description"><b>Important</b>: If you find compatibility issues, check <a href="Debug.md">the bug reporting page</a>.
 The script is also available <a href="https://greasyfork.org/scripts/1317-download-youtube-videos-as-mp4">at greasyfork.org</a>. 
-<br><br><b>What's new</b>: added file sizes, removed 480p/1080p. <a href="Changelog.md">More in the changelog</a>.
+<br><br><b>What's new</b>: added download icon. <a href="Changelog.md">More in the changelog</a>.
 
-<br><br><img alt="" src="http://i.imgur.com/GyOQCe1.png"><br><br>
+<br><br><img alt="" src="http://i.imgur.com/xhdYmVg.png"><br><br>
 
 The script works in:
 

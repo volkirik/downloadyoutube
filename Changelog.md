@@ -1,5 +1,8 @@
 ## Download YouTube Videos as MP4: Changelog
 
+##### 1.7.26 (2014-09-03)
+* added download icon and improved button integration 
+
 ##### 1.7.25 (2014-08-12)
 * fix for signatures poorly detected by previous versions
 

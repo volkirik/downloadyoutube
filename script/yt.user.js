@@ -3,8 +3,8 @@
 // @description Adds a button that lets you download YouTube videos.
 // @homepageURL https://github.com/gantt/downloadyoutube
 // @author Gantt
-// @version 1.7.26
-// @date 2014-09-03
+// @version 1.7.27
+// @date 2014-09-15
 // @namespace http://googlesystem.blogspot.com
 // @include http://www.youtube.com/*
 // @include https://www.youtube.com/*
@@ -91,6 +91,11 @@ function run() {
   var isSignatureUpdatingStarted=false;
   var operaTable=new Array();
   var language=document.documentElement.getAttribute('lang');
+  var textDirection='left';
+  if (document.body.getAttribute('dir')=='rtl') {
+    textDirection='right';
+  }
+  fixTranslations(language, textDirection);
         
   // obtain video ID, formats map   
   
@@ -282,10 +287,16 @@ function run() {
   } 
     
   // find parent container
-  var parentElement=document.getElementById('watch8-secondary-actions');
+  var newWatchPage=false;
+  var parentElement=document.getElementById('watch7-action-buttons');
   if (parentElement==null) {
-    debug('DYVAM - No container for adding the download button. YouTube must have changed the code.');
-    return;
+    parentElement=document.getElementById('watch8-secondary-actions');
+    if (parentElement==null) {
+      debug('DYVAM Error - No container for adding the download button. YouTube must have changed the code.');
+      return;
+    } else {
+      newWatchPage=true;
+    }
   }
   
   // get button labels
@@ -295,19 +306,28 @@ function run() {
   // generate download code for regular interface
   var mainSpan=document.createElement('span');
 
-  var spanIcon=document.createElement('span');
-  spanIcon.setAttribute('class', 'yt-uix-button-icon-wrapper');
-  var imageIcon=document.createElement('img');
-  imageIcon.setAttribute('src', 'https://s.ytimg.com/yts/img/pixel-vfl3z5WfW.gif');
-  imageIcon.setAttribute('class', 'yt-uix-button-icon');
-  imageIcon.setAttribute('style', 'width:20px;height:20px;background-size:20px 20px;background-repeat:no-repeat;background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABG0lEQVRYR+2W0Q3CMAxE2wkYAdiEEWADmIxuACMwCmzABpCTEmRSO7YTQX+ChECV43t2nF7GYeHPuLD+0AKwC/DnWMAp/N5qimkBuAfBdRTF/+2/AV6ZYFUxVYuicAfoHegd6B3oHfhZB+ByF+JyV8FkrAB74pqH3DU5L3iGoBURhdVODIQF4EjEkWLmmhYALOQgNIBcHHke4buhxXAAaFnaAhqbQ5QAOHHkwhZ8balkx1ICCiEBWNZ+CivdB7REHIC2ZjZK2oWklDDdB1NSdCd/Js2PqQMpSIKYVcM8kE6QCwDBNRCqOBJrW0CL8kCYxL0A1k6YxWsANAiXeC2ABOEWbwHAWrwxpzgkmA/JtIqnxTOElmPnjlkc4A3FykAhA42AxwAAAABJRU5ErkJggg==);');
-  spanIcon.appendChild(imageIcon);
-  mainSpan.appendChild(spanIcon);
+  if (newWatchPage) {
+    var spanIcon=document.createElement('span');
+    spanIcon.setAttribute('class', 'yt-uix-button-icon-wrapper');
+    var imageIcon=document.createElement('img');
+    imageIcon.setAttribute('src', '//s.ytimg.com/yt/img/pixel-vfl3z5WfW.gif');
+    imageIcon.setAttribute('class', 'yt-uix-button-icon');
+    imageIcon.setAttribute('style', 'width:20px;height:20px;background-size:20px 20px;background-repeat:no-repeat;background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABG0lEQVRYR+2W0Q3CMAxE2wkYAdiEEWADmIxuACMwCmzABpCTEmRSO7YTQX+ChECV43t2nF7GYeHPuLD+0AKwC/DnWMAp/N5qimkBuAfBdRTF/+2/AV6ZYFUxVYuicAfoHegd6B3oHfhZB+ByF+JyV8FkrAB74pqH3DU5L3iGoBURhdVODIQF4EjEkWLmmhYALOQgNIBcHHke4buhxXAAaFnaAhqbQ5QAOHHkwhZ8balkx1ICCiEBWNZ+CivdB7REHIC2ZjZK2oWklDDdB1NSdCd/Js2PqQMpSIKYVcM8kE6QCwDBNRCqOBJrW0CL8kCYxL0A1k6YxWsANAiXeC2ABOEWbwHAWrwxpzgkmA/JtIqnxTOElmPnjlkc4A3FykAhA42AxwAAAABJRU5ErkJggg==);');
+    spanIcon.appendChild(imageIcon);
+    mainSpan.appendChild(spanIcon);
+  }
 
   var spanButton=document.createElement('span');
   spanButton.setAttribute('class', 'yt-uix-button-content');
   spanButton.appendChild(document.createTextNode(buttonText+' '));
   mainSpan.appendChild(spanButton);
+  
+  if (!newWatchPage) { // old UI
+    var imgButton=document.createElement('img');
+    imgButton.setAttribute('class', 'yt-uix-button-arrow');
+    imgButton.setAttribute('src', '//s.ytimg.com/yt/img/pixel-vfl3z5WfW.gif');
+    mainSpan.appendChild(imgButton);
+  }
 
   var listItems=document.createElement('ol');
   listItems.setAttribute('style', 'display:none;');
@@ -330,7 +350,13 @@ function run() {
   mainSpan.appendChild(listItems);
   var buttonElement=document.createElement('button');
   buttonElement.setAttribute('id', BUTTON_ID);
-  buttonElement.setAttribute('class', 'yt-uix-button  yt-uix-button-size-default yt-uix-button-opacity yt-uix-tooltip');
+  if (newWatchPage) {
+    buttonElement.setAttribute('class', 'yt-uix-button  yt-uix-button-size-default yt-uix-button-opacity yt-uix-tooltip');
+  } else { // old UI
+    buttonElement.setAttribute('class', 'yt-uix-button yt-uix-tooltip yt-uix-button-empty yt-uix-button-text');
+    buttonElement.setAttribute('style', 'margin-top:4px; margin-left:'+((textDirection=='left')?5:10)+'px;');
+    buttonElement.setAttribute('data-tooltip-text', buttonLabel);
+  }
   buttonElement.setAttribute('type', 'button');
   buttonElement.setAttribute('role', 'button');
   buttonElement.addEventListener('click', function(){return false;}, false);
@@ -341,8 +367,12 @@ function run() {
   containerSpan.appendChild(buttonElement);
                                             
   // add the button
-  parentElement.insertBefore(containerSpan, parentElement.firstChild);
-  
+  if (!newWatchPage) { // watch7
+    parentElement.appendChild(containerSpan);
+  } else { // watch8
+    parentElement.insertBefore(containerSpan, parentElement.firstChild);
+  }
+    
   if (!isSignatureUpdatingStarted) {
     for (var i=0;i<downloadCodeList.length;i++) {    
       addFileSize(downloadCodeList[i].url, downloadCodeList[i].format);
@@ -414,6 +444,13 @@ function run() {
     }  
   }
   
+  function injectStyle(code) {
+    var style=document.createElement('style');
+    style.type='text/css';
+    style.appendChild(document.createTextNode(code));
+    document.getElementsByTagName('head')[0].appendChild(style);
+  }
+  
   function injectScript(code) {
     var script=document.createElement('script');
     script.type='application/javascript';
@@ -436,6 +473,23 @@ function run() {
     elem.setAttribute('style', 'display:none;');
     document.body.appendChild(elem);
     return elem;
+  }
+  
+  function fixTranslations(language, textDirection) {  
+    if (/^af|bg|bn|ca|cs|de|el|es|et|eu|fa|fi|fil|fr|gl|hi|hr|hu|id|it|iw|kn|lv|lt|ml|mr|ms|nl|pl|ro|ru|sl|sk|sr|sw|ta|te|th|uk|ur|vi|zu$/.test(language)) { // fix international UI
+      var likeButton=document.getElementById('watch-like');
+      if (likeButton) {
+        var spanElements=likeButton.getElementsByClassName('yt-uix-button-content');
+        if (spanElements) {
+          spanElements[0].style.display='none'; // hide like text
+        }
+      }
+      var marginPixels=10;
+      if (/^bg|ca|cs|el|eu|hr|it|ml|ms|pl|sl|sw|te$/.test(language)) {
+        marginPixels=1;
+      }
+      injectStyle('#watch7-secondary-actions .yt-uix-button{margin-'+textDirection+':'+marginPixels+'px!important}');
+    }
   }
   
   function findMatch(text, regexp) {

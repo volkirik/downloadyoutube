@@ -1,5 +1,8 @@
 ## Download YouTube Videos as MP4: Changelog
 
+##### 1.7.28 (2014-09-17)
+* fixes missing like numbers 
+
 ##### 1.7.27 (2014-09-15)
 * brings back support for the old YouTube UI
 

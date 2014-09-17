@@ -3,8 +3,8 @@
 // @description Adds a button that lets you download YouTube videos.
 // @homepageURL https://github.com/gantt/downloadyoutube
 // @author Gantt
-// @version 1.7.27
-// @date 2014-09-15
+// @version 1.7.28
+// @date 2014-09-17
 // @namespace http://googlesystem.blogspot.com
 // @include http://www.youtube.com/*
 // @include https://www.youtube.com/*
@@ -95,7 +95,9 @@ function run() {
   if (document.body.getAttribute('dir')=='rtl') {
     textDirection='right';
   }
-  fixTranslations(language, textDirection);
+  if (document.getElementById('watch7-action-buttons')) {  // old UI
+    fixTranslations(language, textDirection);
+  }
         
   // obtain video ID, formats map   
   

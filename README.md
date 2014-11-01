@@ -3,7 +3,7 @@ Download YouTube Videos as MP4
 
 <h3>
 ===============
-<a href="https://github.com/gantt/downloadyoutube/blob/master/script/yt.user.js">
+<a href="https://github.com/gantt/downloadyoutube/raw/master/script/yt.user.js">
     Install the script
 </a> 
 ===============

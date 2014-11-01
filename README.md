@@ -4,9 +4,11 @@ Download YouTube Videos as MP4
 The script is also available <a href="https://greasyfork.org/scripts/1317-download-youtube-videos-as-mp4">at greasyfork.org</a>. 
 <br><br><b>What's new</b>: added download icon. <a href="Changelog.md">More in the changelog</a>.
 
-<form action="https://github.com/gantt/downloadyoutube/blob/master/script/yt.user.js">
-    <input type="submit" value="Install the script">
-</form> 
+<div style="padding:5px 25px;background:#35b128;border:1px solid #33842a;border-radius: 10px;box-shadow: 0 0 4px rgba(0,0,0, .75);color:#f3f3f3;font-size:1.1em;">
+<a href="https://github.com/gantt/downloadyoutube/blob/master/script/yt.user.js">
+    Install the script
+</a> 
+</div>
 
 <br><br><img alt="" src="http://i.imgur.com/xhdYmVg.png"><br><br>
 

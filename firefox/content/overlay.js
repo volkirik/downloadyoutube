@@ -159,7 +159,9 @@ contentLoad: function(e) {
     !/^https?:\/\/www\.youtube\.com\/embed\//.test(href)) { // inject script
       let safeWin = new XPCNativeWrapper(unsafeWin);
       let sandbox = new Components.utils.Sandbox(safeWin, {'sandboxPrototype':safeWin, 'wantXrays':true});
-      sandbox.unsafeWindow = unsafeWin;
+      let unsafeWindowGetter = new sandbox.Function('return window.wrappedJSObject || window;');
+      Object.defineProperty(sandbox, 'unsafeWindow', {get: unsafeWindowGetter});
+      // sandbox.unsafeWindow = unsafeWin;
       let storage = new YoutubempEngine.dataStorage();
       sandbox.GM_getValue = YoutubempEngine.hitch(storage, 'getValue');
       sandbox.GM_setValue = YoutubempEngine.hitch(storage, 'setValue');

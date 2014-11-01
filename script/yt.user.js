@@ -3,8 +3,8 @@
 // @description Adds a button that lets you download YouTube videos.
 // @homepageURL https://github.com/gantt/downloadyoutube
 // @author Gantt
-// @version 1.7.28
-// @date 2014-09-17
+// @version 1.7.29
+// @date 2014-11-01
 // @namespace http://googlesystem.blogspot.com
 // @include http://www.youtube.com/*
 // @include https://www.youtube.com/*
@@ -14,6 +14,8 @@
 // @match https://www.youtube.com/*
 // @match http://s.ytimg.com/yts/jsbin/html5player*
 // @match https://s.ytimg.com/yts/jsbin/html5player*
+// @match http://manifest.googlevideo.com/*
+// @match https://manifest.googlevideo.com/*
 // @match http://*.googlevideo.com/videoplayback*
 // @match https://*.googlevideo.com/videoplayback*
 // @match http://*.youtube.com/videoplayback*
@@ -36,7 +38,7 @@
   var SHOW_DASH_FORMATS=false;
   var BUTTON_TEXT={'ar':'تنزيل','cs':'Stáhnout','de':'Herunterladen','en':'Download','es':'Descargar','fr':'Télécharger','hi':'डाउनलोड','hu':'Letöltés','id':'Unduh','it':'Scarica','ja':'ダウンロード','ko':'내려받기','pl':'Pobierz','pt':'Baixar','ro':'Descărcați','ru':'Скачать','tr':'İndir','zh':'下载'};
   var BUTTON_TOOLTIP={'ar':'تنزيل هذا الفيديو','cs':'Stáhnout toto video','de':'Dieses Video herunterladen','en':'Download this video','es':'Descargar este vídeo','fr':'Télécharger cette vidéo','hi':'वीडियो डाउनलोड करें','hu':'Videó letöltése','id':'Unduh video ini','it':'Scarica questo video','ja':'このビデオをダウンロードする','ko':'이 비디오를 내려받기','pl':'Pobierz plik wideo','pt':'Baixar este vídeo','ro':'Descărcați acest videoclip','ru':'Скачать это видео','tr': 'Bu videoyu indir','zh':'下载此视频'};
-  var DECODE_RULE={};
+  var DECODE_RULE=[];
   var RANDOM=7489235179; // Math.floor(Math.random()*1234567890);
   var CONTAINER_ID='download-youtube-video'+RANDOM;
   var LISTITEM_ID='download-youtube-video-fmt'+RANDOM;
@@ -420,6 +422,7 @@ function run() {
         var protocol=(document.location.protocol=='http:')?'http:':'https:';
         videoManifestURL=protocol+videoManifestURL;
       }
+      debug('DYVAM - Info: manifestURL '+videoManifestURL);
       crossXmlHttpRequest({
           method:'GET',
           url:videoManifestURL, // check if URL exists
@@ -427,6 +430,7 @@ function run() {
             if (response.readyState === 4 && response.status === 200 && response.responseText) {
               var regexp = new RegExp('<BaseURL.+>(http[^<]+itag='+newFormat+'[^<]+)<\\/BaseURL>','i');
               var matchURL=findMatch(response.responseText, regexp);
+              debug('DYVAM - Info: matchURL '+matchURL);
               if (!matchURL) return;
               matchURL=matchURL.replace(/&amp\;/g,'&');
               for (var i=0;i<downloadCodeList.length;i++) {
@@ -508,8 +512,10 @@ function run() {
   }
   
   function getPref(name) { // cross-browser GM_getValue
+    var a='', b='';
+    try {a=typeof GM_getValue.toString; b=GM_getValue.toString()} catch(e){}    
     if (typeof GM_getValue === 'function' && 
-    (typeof GM_getValue.toString === 'undefined' || GM_getValue.toString().indexOf('not supported') === -1)) {
+    (a === 'undefined' || b.indexOf('not supported') === -1)) {
       return GM_getValue(name, null); // Greasemonkey, Tampermonkey, Firefox extension
     } else {
         var ls=null;
@@ -522,8 +528,10 @@ function run() {
   }
   
   function setPref(name, value) { //  cross-browser GM_setValue
+    var a='', b='';
+    try {a=typeof GM_setValue.toString; b=GM_setValue.toString()} catch(e){}    
     if (typeof GM_setValue === 'function' && 
-    (typeof GM_setValue.toString === 'undefined' || GM_setValue.toString().indexOf('not supported') === -1)) {
+    (a === 'undefined' || b.indexOf('not supported') === -1)) {
       GM_setValue(name, value); // Greasemonkey, Tampermonkey, Firefox extension
     } else {
         var ls=null;
@@ -634,7 +642,7 @@ function run() {
     var regSwap = new RegExp('[\\w$]+\\s*\\(\\s*[\\w$]+\\s*,\\s*([0-9]+)\\s*\\)');
     var regInline = new RegExp('[\\w$]+\\[0\\]\\s*=\\s*[\\w$]+\\[([0-9]+)\\s*%\\s*[\\w$]+\\.length\\]');
     var functionCodePieces=functionCode.split(';');
-    var decodeArray=[], signatureLength=81;
+    var decodeArray=[];
     for (var i=0; i<functionCodePieces.length; i++) {
       functionCodePieces[i]=functionCodePieces[i].trim();
       var codeLine=functionCodePieces[i];
@@ -646,7 +654,6 @@ function run() {
         var slice=parseInt(arrSlice[1], 10);
         if (isInteger(slice)){ 
           decodeArray.push(-slice);
-          signatureLength+=slice;
         } else return setPref(STORAGE_CODE, 'error');
       } else if (arrReverse && arrReverse.length >= 1) { // reverse
         decodeArray.push(0);
@@ -672,7 +679,7 @@ function run() {
     if (decodeArray) {
       setPref(STORAGE_URL, scriptURL);
       setPref(STORAGE_CODE, decodeArray.toString());
-      DECODE_RULE[signatureLength]=decodeArray;
+      DECODE_RULE=decodeArray;
       debug('DYVAM - Info: signature '+decodeArray.toString()+' '+scriptURL);
       // update download links and add file sizes
       for (var i=0;i<downloadCodeList.length;i++) {        
@@ -724,12 +731,10 @@ function run() {
     var storageCode=getPref(STORAGE_CODE);    
     if (storageCode && storageCode!='error' && isValidSignatureCode(storageCode)) {
       var arr=storageCode.split(',');
-      var signatureLength=81;
       for (var i=0; i<arr.length; i++) {
         arr[i]=parseInt(arr[i], 10);
-        if (arr[i]<0) signatureLength-=arr[i];
       }
-      rules[signatureLength]=arr;
+      rules=arr;
       debug('DYVAM - Info: signature '+arr.toString()+' '+scriptURL);
     }
     return rules;
@@ -746,14 +751,14 @@ function run() {
         sigA=(act>0)?swap(sigA, act):((act==0)?sigA.reverse():sigA.slice(-act));
       }
       var result=sigA.join('');
-      return (result.length==81)?result:sig;
+      return result;
     }
     
     if (sig==null) return '';    
-    var arr=DECODE_RULE[sig.length];
+    var arr=DECODE_RULE;
     if (arr) {
       var sig2=decode(sig, arr);
-      if (sig2 && sig2.length==81) return sig2;
+      if (sig2) return sig2;
     } else {
       setPref(STORAGE_URL, '');
       setPref(STORAGE_CODE, '');

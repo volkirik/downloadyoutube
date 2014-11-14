@@ -1,5 +1,8 @@
 ## Download YouTube Videos as MP4: Changelog
 
+##### 1.7.30 (2014-11-14)
+* fixes signature detection (thanks, everyone)
+
 ##### 1.7.29 (2014-11-01)
 * fixes broken download URLs
 * fixes video detection in Firefox 35+ (thanks, Nicolas)

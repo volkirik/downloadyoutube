@@ -3,8 +3,8 @@
 // @description Adds a button that lets you download YouTube videos.
 // @homepageURL https://github.com/gantt/downloadyoutube
 // @author Gantt
-// @version 1.7.29
-// @date 2014-11-01
+// @version 1.7.30
+// @date 2014-11-14
 // @namespace http://googlesystem.blogspot.com
 // @include http://www.youtube.com/*
 // @include https://www.youtube.com/*
@@ -616,8 +616,14 @@ function run() {
   }
   
   function findSignatureCode(sourceCode) {
-    var signatureFunctionName = findMatch(sourceCode, 
-    /\.signature\s*=\s*([a-zA-Z_$][\w$]*)\([a-zA-Z_$][\w$]*\)/);
+    debug('DYVAM - Info: signature start '+getPref(STORAGE_CODE));
+    var signatureFunctionName = 
+    findMatch(sourceCode, 
+    /\.set\s*\("signature"\s*,\s*([a-zA-Z0-9_$][\w$]*)\(/)
+    || findMatch(sourceCode, 
+    /\.sig\s*\|\|\s*([a-zA-Z0-9_$][\w$]*)\(/)
+    || findMatch(sourceCode, 
+    /\.signature\s*=\s*([a-zA-Z_$][\w$]*)\([a-zA-Z_$][\w$]*\)/); //old
     if (signatureFunctionName == null) return setPref(STORAGE_CODE, 'error');
     signatureFunctionName=signatureFunctionName.replace('$','\\$');    
     var regCode = new RegExp('function \\s*' + signatureFunctionName +

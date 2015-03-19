@@ -2,10 +2,11 @@
 
 let YoutubempEngine={
 
-packageName: '',
+packageName: 'downloadyoutubemp4',
+safeWin: null,
+target: null,
 
 dataStorage: function () { // GM_getValue, GM_setValue
-  YoutubempEngine.packageName = YoutubempEngine.packageName||'downloadyoutubemp4';
   this.pref = Components.classes['@mozilla.org/preferences-service;1'].
     getService(Components.interfaces.nsIPrefService).
     getBranch('extensions.'+YoutubempEngine.packageName+'.');    
@@ -15,14 +16,13 @@ dataStorage: function () { // GM_getValue, GM_setValue
   }
   this.setValue = function(prefName, value) {
     if (typeof value == 'string') {
-      this.pref.setCharPref(prefName, value);
+      sendAsyncMessage(YoutubempEngine.packageName+':setvalue', {pref:prefName,value:value});
     }
   }  
 },
 
-crossXHR: function (unsafeContentWin, chromeWindow) { // GM_xmlhttpRequest
+crossXHR: function (unsafeContentWin) { // GM_xmlhttpRequest
   this.unsafeContentWin = unsafeContentWin;
-  this.chromeWindow = chromeWindow;
   this.contentStartRequest = function(details) {
     if (Components.utils.waiveXrays) { // bypass xrays protection Firefox 32+
       details = Components.utils.waiveXrays(details);
@@ -31,10 +31,12 @@ crossXHR: function (unsafeContentWin, chromeWindow) { // GM_xmlhttpRequest
     if (typeof url != 'string' || !/^https?:\/\//.test(url)) {
       throw new Error('crossXHR: Invalid url '+url);
     }
-    this.chromeWindow.setTimeout(YoutubempEngine.hitch(this, 'chromeStartRequest', details), 0);
+    new XPCNativeWrapper(unsafeContentWin, 'setTimeout()')
+    .setTimeout(YoutubempEngine.hitch(this, 'chromeStartRequest', details), 0);
   }
   this.chromeStartRequest = function(details) {
-    let req = new this.chromeWindow.XMLHttpRequest();
+    let req = Components.classes['@mozilla.org/xmlextras/xmlhttprequest;1']
+    .createInstance(Components.interfaces.nsIXMLHttpRequest);
     this.setupRequestEvent(this.unsafeContentWin, req, 'load', details);
     this.setupRequestEvent(this.unsafeContentWin, req, 'error', details);
     this.setupRequestEvent(this.unsafeContentWin, req, 'readystatechange', details);
@@ -42,18 +44,23 @@ crossXHR: function (unsafeContentWin, chromeWindow) { // GM_xmlhttpRequest
     req.send(details.data);
   }
   this.setupRequestEvent = function(unsafeContentWin, req, event, details) {
-    if (!details['on' + event]) return; //xray error
+    if (!details['on' + event]) return; 
     req.addEventListener(event, function(evt) {
        let responseState = {
-          __exposedProps__: {readyState:'r',responseText:'r',responseHeaders:'r',status:'r',statusText:'r'},
+          __exposedProps__: {readyState:'r',responseText:'r',
+          responseHeaders:'r',status:'r',statusText:'r'},       
           responseText: req.responseText,
           responseHeaders: req.getAllResponseHeaders(),
           readyState: req.readyState,
           status: (req.readyState==4)?req.status:0,
           statusText: (req.readyState==4)?req.statusText:''
         };
+        let state = responseState;
+        if (typeof Components.utils.cloneInto == 'function') {
+          state = Components.utils.cloneInto(responseState,unsafeContentWin);
+        }
         new XPCNativeWrapper(unsafeContentWin, 'setTimeout()')
-          .setTimeout(function(){ details['on' + event](responseState); }, 0);
+          .setTimeout(function(){ details['on' + event](state); }, 0);
     }, false);
   }  
 },
@@ -78,47 +85,8 @@ hitch: function (obj, method) {
 },
 
 downloadFile: function(url, filename) {
-  let nsIFilePicker = Components.interfaces.nsIFilePicker;
-  let fp = Components.classes['@mozilla.org/filepicker;1'].createInstance(nsIFilePicker);
-  fp.defaultString = filename;
-  let storage = new YoutubempEngine.dataStorage();
-  let directoryString = storage.getValue('download-youtube-last-directory', null);
-  let directory = null;
-  if (directoryString) { // last download directory
-    try {
-    directory = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsIFile).initWithPath(directoryString);
-    } catch(e) { }
-    if (directory === null) { // reset last download directory
-      directoryString = null;
-      storage.setValue('download-youtube-last-directory', '');
-    }
-  }
-  if (directoryString === null) { // default download directory
-    directory = null;
-  }
-   
-  fp.displayDirectory = directory;
-  let pos = filename.lastIndexOf('.');
-  let extension = (pos>-1)?filename.substring(pos+1):'*';
-  fp.appendFilter((extension=='m4a')?'Audio':'Video', '*.'+extension);
-  fp.init(window, null, nsIFilePicker.modeSave);
-  let fileBox = fp.show();
-  try {
-  if (fileBox == nsIFilePicker.returnOK || nsIFilePicker.returnReplace) {     
-     let ioService = Components.classes['@mozilla.org/network/io-service;1'].getService(Components.interfaces.nsIIOService);
-     let uri = ioService.newURI(url, null , null);
-     let fileURI = ioService.newFileURI(fp.file);
-     let persist = Components.classes['@mozilla.org/embedding/browser/nsWebBrowserPersist;1'].createInstance(Components.interfaces.nsIWebBrowserPersist);       
-     let xfer = Components.classes['@mozilla.org/transfer;1'].createInstance(Components.interfaces.nsITransfer);
-     let privacyContext = window.QueryInterface(Components.interfaces.nsIInterfaceRequestor).getInterface(Components.interfaces.nsIWebNavigation).QueryInterface(Components.interfaces.nsILoadContext);
-     xfer.init(uri, fileURI, '', null, null, null, persist, false);  
-     persist.progressListener = xfer;
-     persist.saveURI(uri, null, null, null, null, fp.file, privacyContext);
-     if (fp.file.parent.path != directoryString) {
-        storage.setValue('download-youtube-last-directory', fp.file.parent.path);
-     }
-   }
-   } catch(e) {}
+    sendAsyncMessage(YoutubempEngine.packageName+':savefileas', 
+    {url:url,filename:filename}, {target:YoutubempEngine.target});
 },
 
 getUrlContents: function(url) {
@@ -144,6 +112,7 @@ getUrlContents: function(url) {
 },
 
 contentLoad: function(e) {
+    YoutubempEngine.target = e.target;
     let unsafeWin = e.target.defaultView;
     if (unsafeWin.wrappedJSObject) {
       unsafeWin = unsafeWin.wrappedJSObject;
@@ -153,43 +122,48 @@ contentLoad: function(e) {
     }      
     let unsafeLoc = new XPCNativeWrapper(unsafeWin, 'location').location;
     let href = new XPCNativeWrapper(unsafeLoc, 'href').href;
-    let scheme = Components.classes['@mozilla.org/network/io-service;1'].getService(Components.interfaces.nsIIOService).extractScheme(href);   
+    let scheme = Components.classes['@mozilla.org/network/io-service;1']
+    .getService(Components.interfaces.nsIIOService).extractScheme(href);   
     if ((scheme == 'http' || scheme == 'https') && 
     /^https?:\/\/www\.youtube\.com\//.test(href) && 
     !/^https?:\/\/www\.youtube\.com\/embed\//.test(href)) { // inject script
       let safeWin = new XPCNativeWrapper(unsafeWin);
-      let sandbox = new Components.utils.Sandbox(safeWin, {'sandboxPrototype':safeWin, 'wantXrays':true});
-      let unsafeWindowGetter = new sandbox.Function('return window.wrappedJSObject || window;');
+      YoutubempEngine.safeWin = e.target.defaultView;
+      let sandbox = new Components.utils.Sandbox(safeWin, 
+      {'sandboxPrototype':safeWin, 'wantXrays':true});
+      var unsafeWindowGetter = new sandbox.Function('return window.wrappedJSObject || window;');
       Object.defineProperty(sandbox, 'unsafeWindow', {get: unsafeWindowGetter});
-      // sandbox.unsafeWindow = unsafeWin;
       let storage = new YoutubempEngine.dataStorage();
       sandbox.GM_getValue = YoutubempEngine.hitch(storage, 'getValue');
       sandbox.GM_setValue = YoutubempEngine.hitch(storage, 'setValue');
-      let xmlhttpRequester = new YoutubempEngine.crossXHR(unsafeWin, window);
+      let xmlhttpRequester = new YoutubempEngine.crossXHR(unsafeWin);
       sandbox.GM_xmlhttpRequest = YoutubempEngine.hitch(xmlhttpRequester, 'contentStartRequest');      
       sandbox.GM_download = YoutubempEngine.downloadFile;
       try {
-          let script = YoutubempEngine.getUrlContents('resource://'+YoutubempEngine.packageName+'/content/yt.user.js');
+          let script = YoutubempEngine.getUrlContents(
+          'resource://'+YoutubempEngine.packageName+'/content/yt.user.js');
           Components.utils.evalInSandbox(script, sandbox);
       } catch (e) { }
     }       
 },
 
-init: function(name) {
-    YoutubempEngine.packageName = name;
-    let appcontent = window.document.getElementById('appcontent');    
-    if (appcontent) {
-        appcontent.addEventListener('DOMContentLoaded', YoutubempEngine.contentLoad, false);
-    }
+inject: function(event) {
+  let doc = event.originalTarget;
+  if (doc.nodeName != '#document') return; // only documents 
+  YoutubempEngine.contentLoad(event);
+},
+
+init: function() {
+  addEventListener('DOMContentLoaded', YoutubempEngine.inject);
 },
 
 uninit: function() {
-    window.removeEventListener('load', YoutubempEngine.init, false);
-    window.removeEventListener('unload', YoutubempEngine.uninit, false);
-    let appcontent = window.document.getElementById('appcontent');    
-    if (appcontent) {
-        appcontent.removeEventListener('DOMContentLoaded', YoutubempEngine.contentLoad, false);
-    }    
+  removeEventListener('DOMContentLoaded', YoutubempEngine.inject);
 }
 
 }
+
+// addMessageListener(YoutubempEngine.packageName+':init', YoutubempEngine.init);
+// addMessageListener(YoutubempEngine.packageName+':uninit', YoutubempEngine.uninit);
+
+addEventListener('DOMContentLoaded', YoutubempEngine.inject);

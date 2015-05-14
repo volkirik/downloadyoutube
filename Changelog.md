@@ -1,5 +1,9 @@
 ## Download YouTube Videos as MP4: Changelog
 
+##### 1.8.2 (2015-05-14)
+* bug fix for blocked or removed videos - thanks, Сергей 
+* DASH bug fixes
+
 ##### 1.8.1 (2015-03-19)
 * [Firefox extension] Added support for electrolysis (e10s) - https://wiki.mozilla.org/Electrolysis
 * [Firefox extension] Dropped support for Firefox 19 and earlier (e10s required a major code rewrite)

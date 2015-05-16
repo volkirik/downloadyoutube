@@ -3,8 +3,8 @@
 // @description Adds a button that lets you download YouTube videos.
 // @homepageURL https://github.com/gantt/downloadyoutube
 // @author Gantt
-// @version 1.8.2
-// @date 2015-05-14
+// @version 1.8.3
+// @date 2015-05-17
 // @namespace http://googlesystem.blogspot.com
 // @include http://www.youtube.com/*
 // @include https://www.youtube.com/*
@@ -69,7 +69,8 @@ function start() {
           mutations.forEach(function(mutation) {
               if(mutation.addedNodes!==null) {
                 for (var i=0; i<mutation.addedNodes.length; i++) {
-                    if (mutation.addedNodes[i].id=='watch7-container') { // old value: movie_player
+                    if (mutation.addedNodes[i].id=='watch7-container' ||
+                        mutation.addedNodes[i].id=='watch7-main-container') { // old value: movie_player
                       run();
                       break;
                     }
@@ -85,7 +86,8 @@ function start() {
 }
 
 function onNodeInserted(e) { 
-    if (e && e.target && e.target.id=='watch7-container') { // old value: movie_player
+    if (e && e.target && (e.target.id=='watch7-container' || 
+        e.target.id=='watch7-main-container')) { // old value: movie_player
       run();
   }
 }

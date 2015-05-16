@@ -3,7 +3,7 @@
   <Description about="urn:mozilla:install-manifest">
     <em:id>{b9bfaf1c-a63f-47cd-8b9a-29526ced9060}</em:id>
     <em:name>Download YouTube Videos as MP4</em:name>
-    <em:version>1.8.2</em:version>
+    <em:version>1.8.3</em:version>
     <em:description>Adds a button that lets you download YouTube videos.</em:description>
     <em:type>2</em:type>
     <em:bootstrap>true</em:bootstrap>

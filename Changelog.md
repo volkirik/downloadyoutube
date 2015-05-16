@@ -1,5 +1,8 @@
 ## Download YouTube Videos as MP4: Changelog
 
+##### 1.8.3 (2015-05-17)
+* bug fix for experimental YouTube SPF - thanks, Alexandru 
+
 ##### 1.8.2 (2015-05-14)
 * bug fix for blocked or removed videos - thanks, Сергей 
 * DASH bug fixes

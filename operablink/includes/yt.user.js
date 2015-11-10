@@ -3,8 +3,8 @@
 // @description Adds a button that lets you download YouTube videos.
 // @homepageURL https://github.com/gantt/downloadyoutube
 // @author Gantt
-// @version 1.8.3
-// @date 2015-05-17
+// @version 1.8.4
+// @date 2015-10-11
 // @namespace http://googlesystem.blogspot.com
 // @include http://www.youtube.com/*
 // @include https://www.youtube.com/*
@@ -202,8 +202,14 @@ function run() {
   }
   
    // video title
-  var videoTitle=document.title || 'video';
-  videoTitle=videoTitle.replace(/\s*\-\s*YouTube$/i,'').replace(/[#"\?:\*]/g,'').replace(/[&\|\\\/]/g,'_').replace(/'/g,'\'').replace(/^\s+|\s+$/g,'').replace(/\.+$/g,'');  
+   var videoTitle=document.title || 'video';
+   videoTitle=videoTitle.replace(/\s*\-\s*YouTube$/i, '').replace(/'/g, '\'').replace(/^\s+|\s+$/g, '').replace(/\.+$/g, '');
+   videoTitle=videoTitle.replace(/[:"\?\*]/g, '').replace(/[\|\\\/]/g, '_'); // Mac, Linux, Windows
+   if (((window.navigator.userAgent || '').toLowerCase()).indexOf('windows') >= 0) {
+      videoTitle=videoTitle.replace(/#/g, '').replace(/&/g, '_'); // Windows
+   } else {
+      videoTitle=videoTitle.replace(/#/g, '%23').replace(/&/g, '%26'); //  Mac, Linux
+   }
                         
   // parse the formats map
   var sep1='%2C', sep2='%26', sep3='%3D';
@@ -635,9 +641,11 @@ function run() {
     /\.signature\s*=\s*([a-zA-Z_$][\w$]*)\([a-zA-Z_$][\w$]*\)/); //old
     if (signatureFunctionName == null) return setPref(STORAGE_CODE, 'error');
     signatureFunctionName=signatureFunctionName.replace('$','\\$');    
-    var regCode = new RegExp('function \\s*' + signatureFunctionName +
+    var regCode = new RegExp(signatureFunctionName + '\\s*=\\s*function' +
     '\\s*\\([\\w$]*\\)\\s*{[\\w$]*=[\\w$]*\\.split\\(""\\);(.+);return [\\w$]*\\.join');
-    var functionCode = findMatch(sourceCode, regCode);
+    var regCode2 = new RegExp('function \\s*' + signatureFunctionName +
+    '\\s*\\([\\w$]*\\)\\s*{[\\w$]*=[\\w$]*\\.split\\(""\\);(.+);return [\\w$]*\\.join');    
+    var functionCode = findMatch(sourceCode, regCode) || findMatch(sourceCode, regCode2);
     debug('DYVAM - Info: signaturefunction ' + signatureFunctionName + ' -- ' + functionCode);            
     if (functionCode == null) return setPref(STORAGE_CODE, 'error');
     

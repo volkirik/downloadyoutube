@@ -1,5 +1,8 @@
 ## Download YouTube Videos as MP4: Changelog
 
+##### 1.8.4 (2015-11-10)
+* fixed signature detection (thanks, everyone) 
+
 ##### 1.8.3 (2015-05-17)
 * bug fix for experimental YouTube SPF - thanks, Alexandru 
 

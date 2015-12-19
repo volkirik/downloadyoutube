@@ -151,6 +151,7 @@ inject: function(event) {
   let doc = event.originalTarget;
   if (doc.nodeName != '#document') return; // only documents 
   YoutubempEngine.contentLoad(event);
+  //removeEventListener('DOMContentLoaded', YoutubempEngine.inject);
 },
 
 init: function() {

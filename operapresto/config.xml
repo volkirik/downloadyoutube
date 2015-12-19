@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<widget xmlns="http://www.w3.org/ns/widgets" version="1.8.4">
+<widget xmlns="http://www.w3.org/ns/widgets" version="1.8.5">
   <name>Download YouTube Videos as MP4</name>
   <description>Adds a button that lets you download YouTube videos as MP4 and FLV.</description>
   <author href="https://github.com/gantt/downloadyoutube"

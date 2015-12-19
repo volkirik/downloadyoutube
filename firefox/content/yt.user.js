@@ -3,31 +3,16 @@
 // @description Adds a button that lets you download YouTube videos.
 // @homepageURL https://github.com/gantt/downloadyoutube
 // @author Gantt
-// @version 1.8.4
-// @date 2015-10-11
+// @version 1.8.5
+// @date 2015-12-19
 // @namespace http://googlesystem.blogspot.com
 // @include http://www.youtube.com/*
 // @include https://www.youtube.com/*
 // @exclude http://www.youtube.com/embed/*
 // @exclude https://www.youtube.com/embed/*
-// @match http://www.youtube.com/*
-// @match https://www.youtube.com/*
-// @match http://s.ytimg.com/yts/jsbin/html5player*
-// @match https://s.ytimg.com/yts/jsbin/html5player*
-// @match http://manifest.googlevideo.com/*
-// @match https://manifest.googlevideo.com/*
-// @match http://*.googlevideo.com/videoplayback*
-// @match https://*.googlevideo.com/videoplayback*
-// @match http://*.youtube.com/videoplayback*
-// @match https://*.youtube.com/videoplayback*
-// @grant GM_xmlhttpRequest
-// @grant GM_getValue
-// @grant GM_setValue
 // @run-at document-end
 // @license MIT License
-// @icon data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAB3RJTUUH2wMOCgIoGUYEAQAAAAlwSFlzAAALEgAACxIB0t1+/AAAAARnQU1BAACxjwv8YQUAAAGSUExURfi/JO/v797e3sbGxq2traWlpZSUlJycnNbW1oyEhIRaWow5OZQhIZwYGKUQEKUICK0ICJQxMYxKSoxzc4x7e4RCQpQYGKUAAK0AALUAAL0AAK0QEIxra5QpKa0YGIxSUsYAAKUhIZR7e87Ozr0ICJRSUr29vYxjY6U5OaUpKa0hIb21tZwAALUICO/Ozu/GxqUxMZSEhLUYGO/W1r0YGKVCQpQQEL0pKffe3vfW1pxra5Q5OcZCQvfn585CQr2trZx7e8ZSUs5SUq05Oc5jY9ZjY84AAKWMjM5zc957e60pKdaMjOelpbWcnLWUlLVCQsYYGMYICNbOzpQICMYhIbV7e5xaWt6cnPfv79bGxt6lpe+9vc5KSs6lpb0xMc6EhM69vbUxMbUhIb1aWs61tcZaWuecnMYxMb1KSsZjY96UlNa1td7W1r17e9a9vZwQEN6trb1jY8YQENZra+fOzr1zc85aWufe3t6MjMY5OdZaWt61tdZ7e+/n5+e9vc6MjMZra+/e3ue1tdalpd7GxrUpKalL4aAAAAABdFJOUwBA5thmAAACxklEQVR42uXX/1/SQBgH8NuAoEQ2ijgbBivJLznBAiUUKiyJSgOVAk0tKZKw75mRRt/7v4MBY8ezjW39Vs8v8rqHz/u1jbvbidC/XL8KmcpOqVT6nSjXjooGw8WfFd+QWGfE4oLbtbr++PdMOy0BDYLjEj/0xevfWIyVAI7b/aIj/9WHsRrA8Yf9bqSexVgD4Lic9kWE/LgPwPGfNfJHDO4P8Iuq+S2M9QD8oUp+nxEAcFCtfgIA/14x/9ElAKDQbNQAwN9VAiYEABy0OgsAWAnB/AcBAtVWawkAfJ4CD0BQADZavYcQgI9h3CCQjpD5PcEgwG+SwLRhIL0vz78SjAPEU3hrHODfyX4I6rUJIP0G3oExoNwFXpoB+HwXmDEFpF9IwKA5YK+Tp9fMAdUOsC6YA553gKcmgdTfAhV1oMQqADndQDmJ0AZLAsFnCIV3VYDHJLAjDkZKciAaFz/lCeBJB1glgXBrNLndBWLJ9uZGAI+keTBLANL8SnWAzWRniAC2pG+6lQF0hfjTqCIBrEvjDwiggFSLuIUoLY0vEwAbUcsnc/LlnO02HGvEz+hXEeJ5Yj+4L2vNkxOJDSnlQzliIq2synr3embiUBjmw0FyU83KX04Ob+9aAK/Ppd5deZloz4HFlCHzt3sX0x2a6LcvQb4ab8r7i+DVdqvnCq/D5ZzqdhfAcr5B9wD0PNwPEu0ZnLwK9oPgNfCQJ2fhhhITJ3E8BjeUOXA+QNQlBh5xLjemVCgKjzgzNIJFjWF4yJoKhafgIWt6VHGmjgR0HvMuTipPdWQJ6AImbBRSE8aY/sC4er5xFx5vHyB4YRRpFWUf0AL4c+dHkHZRFo9TDeB9Aa3Llwjr8FlFwB+wO/rHm0VbPae9mPini/O5h/XGxatw2I6fGHAOuhiGZVxO98lTdgutP94yaIvVdqxZdpvFYTT9X9UfqQQlTXlm8wkAAAAASUVORK5CYII=
 // ==/UserScript==
-
 
 (function () {
   var FORMAT_LABEL={'5':'FLV 240p','18':'MP4 360p','22':'MP4 720p','34':'FLV 360p','35':'FLV 480p','37':'MP4 1080p','38':'MP4 2160p','43':'WebM 360p','44':'WebM 480p','45':'WebM 720p','46':'WebM 1080p','135':'MP4 480p - no audio','137':'MP4 1080p - no audio','138':'MP4 2160p - no audio','139':'M4A 48kbps - audio','140':'M4A 128kbps - audio','141':'M4A 256kbps - audio','264':'MP4 1440p - no audio','266':'MP4 2160p - no audio','298':'MP4 720p60 - no audio','299':'MP4 1080p60 - no audio'};
@@ -425,7 +410,7 @@ function run() {
   }
   
   function addFromManifest(oldFormat, newFormat) { // find newFormat URL in manifest
-    if (videoManifestURL && videoURL[newFormat]==undefined && SHOW_DASH_FORMATS && FORMAT_RULE['m4a']=='max') {
+    if (videoManifestURL && videoURL[newFormat]==undefined && SHOW_DASH_FORMATS && FORMAT_RULE['m4a']!='none') {
       var matchSig=findMatch(videoManifestURL, /\/s\/([a-zA-Z0-9\.]+)\//i);
       if (matchSig) {
         var decryptedSig=decryptSignature(matchSig);
@@ -448,16 +433,29 @@ function run() {
               debug('DYVAM - Info: matchURL '+matchURL);
               if (!matchURL) return;
               matchURL=matchURL.replace(/&amp\;/g,'&');
-              for (var i=0;i<downloadCodeList.length;i++) {
-                if (downloadCodeList[i].format==oldFormat) {
-                  downloadCodeList[i].format==newFormat;
-                  var downloadFMT=document.getElementById(LISTITEM_ID+oldFormat);
-                  downloadFMT.setAttribute('id', LISTITEM_ID+newFormat);
-                  downloadFMT.parentNode.setAttribute('href', matchURL);
-                  downloadCodeList[i].url=matchURL;
-                  downloadFMT.firstChild.nodeValue=FORMAT_LABEL[newFormat];
-                  addFileSize(matchURL, newFormat);
+              if (FORMAT_RULE['m4a']=='max') {
+                for (var i=0;i<downloadCodeList.length;i++) {
+                  if (downloadCodeList[i].format==oldFormat) {
+                    downloadCodeList[i].format==newFormat;
+                    var downloadFMT=document.getElementById(LISTITEM_ID+oldFormat);
+                    downloadFMT.setAttribute('id', LISTITEM_ID+newFormat);
+                    downloadFMT.parentNode.setAttribute('href', matchURL);
+                    downloadCodeList[i].url=matchURL;
+                    downloadFMT.firstChild.nodeValue=FORMAT_LABEL[newFormat];
+                    addFileSize(matchURL, newFormat);
+                  }
                 }
+              } else if (FORMAT_RULE['m4a']=='all') {
+                downloadCodeList.push(
+                  {url:matchURL,sig:videoSignature[newFormat],format:newFormat,label:FORMAT_LABEL[newFormat]});
+                var downloadFMT=document.getElementById(LISTITEM_ID+oldFormat);
+                var clone=downloadFMT.parentNode.parentNode.cloneNode(true);
+                clone.firstChild.firstChild.setAttribute('id', LISTITEM_ID+newFormat);
+                clone.firstChild.setAttribute('href', matchURL);
+                downloadFMT.parentNode.parentNode.parentNode.appendChild(clone);
+                downloadFMT=document.getElementById(LISTITEM_ID+newFormat);
+                downloadFMT.firstChild.nodeValue=FORMAT_LABEL[newFormat];
+                addFileSize(matchURL, newFormat);
               }
             }
           } 
@@ -642,9 +640,9 @@ function run() {
     if (signatureFunctionName == null) return setPref(STORAGE_CODE, 'error');
     signatureFunctionName=signatureFunctionName.replace('$','\\$');    
     var regCode = new RegExp(signatureFunctionName + '\\s*=\\s*function' +
-    '\\s*\\([\\w$]*\\)\\s*{[\\w$]*=[\\w$]*\\.split\\(""\\);(.+);return [\\w$]*\\.join');
+    '\\s*\\([\\w$]*\\)\\s*{[\\w$]*=[\\w$]*\\.split\\(""\\);\n*(.+);return [\\w$]*\\.join');
     var regCode2 = new RegExp('function \\s*' + signatureFunctionName +
-    '\\s*\\([\\w$]*\\)\\s*{[\\w$]*=[\\w$]*\\.split\\(""\\);(.+);return [\\w$]*\\.join');    
+    '\\s*\\([\\w$]*\\)\\s*{[\\w$]*=[\\w$]*\\.split\\(""\\);\n*(.+);return [\\w$]*\\.join');    
     var functionCode = findMatch(sourceCode, regCode) || findMatch(sourceCode, regCode2);
     debug('DYVAM - Info: signaturefunction ' + signatureFunctionName + ' -- ' + functionCode);            
     if (functionCode == null) return setPref(STORAGE_CODE, 'error');

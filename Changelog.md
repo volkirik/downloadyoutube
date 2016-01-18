@@ -1,5 +1,9 @@
 ## Download YouTube Videos as MP4: Changelog
 
+##### 1.8.6 (2016-01-18)
+* [only for the script, not the extensions]
+* fixes Tampermonkey cross-origin issues (thanks, Giusy)
+
 ##### 1.8.5 (2015-12-19)
 * signature bug fix
 * improved format detection

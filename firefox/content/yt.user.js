@@ -3,16 +3,32 @@
 // @description Adds a button that lets you download YouTube videos.
 // @homepageURL https://github.com/gantt/downloadyoutube
 // @author Gantt
-// @version 1.8.5
-// @date 2015-12-19
+// @version 1.8.7
+// @date 2016-03-19
 // @namespace http://googlesystem.blogspot.com
 // @include http://www.youtube.com/*
 // @include https://www.youtube.com/*
 // @exclude http://www.youtube.com/embed/*
 // @exclude https://www.youtube.com/embed/*
+// @match http://www.youtube.com/*
+// @match https://www.youtube.com/*
+// @match http://s.ytimg.com/yts/jsbin/html5player*
+// @match https://s.ytimg.com/yts/jsbin/html5player*
+// @match http://manifest.googlevideo.com/*
+// @match https://manifest.googlevideo.com/*
+// @match http://*.googlevideo.com/videoplayback*
+// @match https://*.googlevideo.com/videoplayback*
+// @match http://*.youtube.com/videoplayback*
+// @match https://*.youtube.com/videoplayback*
+// @connect googlevideo.com
+// @connect ytimg.com
+// @grant GM_xmlhttpRequest
+// @grant GM_getValue
+// @grant GM_setValue
 // @run-at document-end
 // @license MIT License
 // ==/UserScript==
+
 
 (function () {
   var FORMAT_LABEL={'5':'FLV 240p','18':'MP4 360p','22':'MP4 720p','34':'FLV 360p','35':'FLV 480p','37':'MP4 1080p','38':'MP4 2160p','43':'WebM 360p','44':'WebM 480p','45':'WebM 720p','46':'WebM 1080p','135':'MP4 480p - no audio','137':'MP4 1080p - no audio','138':'MP4 2160p - no audio','139':'M4A 48kbps - audio','140':'M4A 128kbps - audio','141':'M4A 256kbps - audio','264':'MP4 1440p - no audio','266':'MP4 2160p - no audio','298':'MP4 720p60 - no audio','299':'MP4 1080p60 - no audio'};

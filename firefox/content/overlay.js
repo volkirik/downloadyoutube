@@ -47,6 +47,7 @@ crossXHR: function (unsafeContentWin) { // GM_xmlhttpRequest
     if (!details['on' + event]) return; 
     req.addEventListener(event, function(evt) {
        let responseState = {
+       // __exposedProps__ is deprecated, but it's still used for Firefox < 35
           __exposedProps__: {readyState:'r',responseText:'r',
           responseHeaders:'r',status:'r',statusText:'r'},       
           responseText: req.responseText,
@@ -56,6 +57,7 @@ crossXHR: function (unsafeContentWin) { // GM_xmlhttpRequest
           statusText: (req.readyState==4)?req.statusText:''
         };
         let state = responseState;
+        // __exposedProps__ alternative, cloneInto requires Firefox 35+
         if (typeof Components.utils.cloneInto == 'function') {
           state = Components.utils.cloneInto(responseState,unsafeContentWin);
         }
@@ -99,7 +101,14 @@ getUrlContents: function(url) {
     .classes['@mozilla.org/intl/scriptableunicodeconverter']
     .createInstance(Components.interfaces.nsIScriptableUnicodeConverter);
     unicodeConverter.charset = 'UTF-8';
-    let	input = ioService.newChannel(url, 'UTF-8', null).open();
+    let input = null;
+    if (typeof ioService.newChannel == 'function') { // deprecated in Firefox 48
+    	input = ioService.newChannel(url, 'UTF-8', null).open();
+    } else {
+    	input = ioService.newChannel2(url, 'UTF-8', null, null, null, null, 
+    	Components.interfaces.nsILoadInfo.SEC_NORMAL, 
+    	Components.interfaces.nsIContentPolicy.TYPE_OTHER).open();
+    }    
     scriptableStream.init(input);
     let	str = scriptableStream.read(input.available());
     scriptableStream.close();

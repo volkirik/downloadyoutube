@@ -1,5 +1,9 @@
 ## Download YouTube Videos as MP4: Changelog
 
+##### 1.8.7 (2016-03-19)
+* [only for the script and the Firefox extension]
+* replacing a function that's supposedly deprecated in Firefox 48 (thanks, Leo)
+
 ##### 1.8.6 (2016-01-18)
 * [only for the script, not the extensions]
 * fixes Tampermonkey cross-origin issues (thanks, Giusy)

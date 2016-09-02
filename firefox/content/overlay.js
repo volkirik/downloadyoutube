@@ -1,5 +1,7 @@
 'use strict';
 
+const{classes:Cc,interfaces:Ci,utils:Cu}=Components;
+
 let YoutubempEngine={
 
 packageName: 'downloadyoutubemp4',
@@ -7,8 +9,8 @@ safeWin: null,
 target: null,
 
 dataStorage: function () { // GM_getValue, GM_setValue
-  this.pref = Components.classes['@mozilla.org/preferences-service;1'].
-    getService(Components.interfaces.nsIPrefService).
+  this.pref = Cc['@mozilla.org/preferences-service;1'].
+    getService(Ci.nsIPrefService).
     getBranch('extensions.'+YoutubempEngine.packageName+'.');    
   this.getValue = function(prefName, defaultValue) {
     let prefType = this.pref.getPrefType(prefName);
@@ -24,8 +26,8 @@ dataStorage: function () { // GM_getValue, GM_setValue
 crossXHR: function (unsafeContentWin) { // GM_xmlhttpRequest
   this.unsafeContentWin = unsafeContentWin;
   this.contentStartRequest = function(details) {
-    if (Components.utils.waiveXrays) { // bypass xrays protection Firefox 32+
-      details = Components.utils.waiveXrays(details);
+    if (Cu.waiveXrays) { // bypass xrays protection Firefox 32+
+      details = Cu.waiveXrays(details);
     }    
     let url = details.url;
     if (typeof url != 'string' || !/^https?:\/\//.test(url)) {
@@ -35,8 +37,8 @@ crossXHR: function (unsafeContentWin) { // GM_xmlhttpRequest
     .setTimeout(YoutubempEngine.hitch(this, 'chromeStartRequest', details), 0);
   }
   this.chromeStartRequest = function(details) {
-    let req = Components.classes['@mozilla.org/xmlextras/xmlhttprequest;1']
-    .createInstance(Components.interfaces.nsIXMLHttpRequest);
+    let req = Cc['@mozilla.org/xmlextras/xmlhttprequest;1']
+    .createInstance(Ci.nsIXMLHttpRequest);
     this.setupRequestEvent(this.unsafeContentWin, req, 'load', details);
     this.setupRequestEvent(this.unsafeContentWin, req, 'error', details);
     this.setupRequestEvent(this.unsafeContentWin, req, 'readystatechange', details);
@@ -58,8 +60,8 @@ crossXHR: function (unsafeContentWin) { // GM_xmlhttpRequest
         };
         let state = responseState;
         // __exposedProps__ alternative, cloneInto requires Firefox 35+
-        if (typeof Components.utils.cloneInto == 'function') {
-          state = Components.utils.cloneInto(responseState,unsafeContentWin);
+        if (typeof Cu.cloneInto == 'function') {
+          state = Cu.cloneInto(responseState,unsafeContentWin);
         }
         new XPCNativeWrapper(unsafeContentWin, 'setTimeout()')
           .setTimeout(function(){ details['on' + event](state); }, 0);
@@ -92,22 +94,22 @@ downloadFile: function(url, filename) {
 },
 
 getUrlContents: function(url) {
-    let	ioService = Components.classes['@mozilla.org/network/io-service;1']
-    .getService(Components.interfaces.nsIIOService);
+    let	ioService = Cc['@mozilla.org/network/io-service;1']
+    .getService(Ci.nsIIOService);
     let	scriptableStream = Components
     .classes['@mozilla.org/scriptableinputstream;1']
-    .getService(Components.interfaces.nsIScriptableInputStream);
+    .getService(Ci.nsIScriptableInputStream);
     let unicodeConverter = Components
     .classes['@mozilla.org/intl/scriptableunicodeconverter']
-    .createInstance(Components.interfaces.nsIScriptableUnicodeConverter);
+    .createInstance(Ci.nsIScriptableUnicodeConverter);
     unicodeConverter.charset = 'UTF-8';
     let input = null;
     if (typeof ioService.newChannel == 'function') { // deprecated in Firefox 48
     	input = ioService.newChannel(url, 'UTF-8', null).open();
     } else {
     	input = ioService.newChannel2(url, 'UTF-8', null, null, null, null, 
-    	Components.interfaces.nsILoadInfo.SEC_NORMAL, 
-    	Components.interfaces.nsIContentPolicy.TYPE_OTHER).open();
+    	Ci.nsILoadInfo.SEC_NORMAL, 
+    	Ci.nsIContentPolicy.TYPE_OTHER).open();
     }    
     scriptableStream.init(input);
     let	str = scriptableStream.read(input.available());
@@ -131,14 +133,14 @@ contentLoad: function(e) {
     }      
     let unsafeLoc = new XPCNativeWrapper(unsafeWin, 'location').location;
     let href = new XPCNativeWrapper(unsafeLoc, 'href').href;
-    let scheme = Components.classes['@mozilla.org/network/io-service;1']
-    .getService(Components.interfaces.nsIIOService).extractScheme(href);   
+    let scheme = Cc['@mozilla.org/network/io-service;1']
+    .getService(Ci.nsIIOService).extractScheme(href);   
     if ((scheme == 'http' || scheme == 'https') && 
     /^https?:\/\/www\.youtube\.com\//.test(href) && 
     !/^https?:\/\/www\.youtube\.com\/embed\//.test(href)) { // inject script
       let safeWin = new XPCNativeWrapper(unsafeWin);
       YoutubempEngine.safeWin = e.target.defaultView;
-      let sandbox = new Components.utils.Sandbox(safeWin, 
+      let sandbox = new Cu.Sandbox(safeWin, 
       {'sandboxPrototype':safeWin, 'wantXrays':true});
       var unsafeWindowGetter = new sandbox.Function('return window.wrappedJSObject || window;');
       Object.defineProperty(sandbox, 'unsafeWindow', {get: unsafeWindowGetter});
@@ -151,7 +153,7 @@ contentLoad: function(e) {
       try {
           let script = YoutubempEngine.getUrlContents(
           'resource://'+YoutubempEngine.packageName+'/content/yt.user.js');
-          Components.utils.evalInSandbox(script, sandbox);
+          Cu.evalInSandbox(script, sandbox);
       } catch (e) { }
     }       
 },

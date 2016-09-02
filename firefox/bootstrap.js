@@ -29,15 +29,15 @@ saveFileAs: function(message) {
   let url = message.data.url;
   let filename = message.data.filename;
   //let win = message.objects.target;
-  let nsIFilePicker = Components.interfaces.nsIFilePicker;
-  let fp = Components.classes['@mozilla.org/filepicker;1'].createInstance(nsIFilePicker);
+  let nsIFilePicker = Ci.nsIFilePicker;
+  let fp = Cc['@mozilla.org/filepicker;1'].createInstance(nsIFilePicker);
   fp.defaultString = filename;
   let directoryString = YoutubempEngine.getValue({data:{pref:'download-youtube-last-directory'}});
   let directory = null;
   if (directoryString) { // last download directory
     try {
-    directory = Components.classes['@mozilla.org/file/local;1'].
-    createInstance(Components.interfaces.nsIFile).initWithPath(directoryString);
+    directory = Cc['@mozilla.org/file/local;1'].
+    createInstance(Ci.nsIFile).initWithPath(directoryString);
     } catch(e) { }
     if (directory === null) { // reset last download directory
       directoryString = null;
@@ -53,21 +53,21 @@ saveFileAs: function(message) {
   let extension = (pos>-1)?filename.substring(pos+1):'*';
   fp.appendFilter((extension=='m4a')?'Audio':'Video', '*.'+extension);
   
-  var windowMediator = Components.classes['@mozilla.org/appshell/window-mediator;1'].
-  getService(Components.interfaces.nsIWindowMediator);
+  var windowMediator = Cc['@mozilla.org/appshell/window-mediator;1'].
+  getService(Ci.nsIWindowMediator);
   var window = windowMediator.getMostRecentWindow(null);
   
   fp.init(window, null, nsIFilePicker.modeSave);
   let fileBox = fp.show();
   try {
   if (fileBox == nsIFilePicker.returnOK || nsIFilePicker.returnReplace) {     
-     let ioService = Components.classes['@mozilla.org/network/io-service;1'].
-     getService(Components.interfaces.nsIIOService);
+     let ioService = Cc['@mozilla.org/network/io-service;1'].
+     getService(Ci.nsIIOService);
      let uri = ioService.newURI(url, null , null);
      let fileURI = ioService.newFileURI(fp.file);
-     let persist = Components.classes['@mozilla.org/embedding/browser/nsWebBrowserPersist;1'].createInstance(Components.interfaces.nsIWebBrowserPersist);       
-     let xfer = Components.classes['@mozilla.org/transfer;1'].createInstance(Components.interfaces.nsITransfer);
-     let privacyContext = window.QueryInterface(Components.interfaces.nsIInterfaceRequestor).getInterface(Components.interfaces.nsIWebNavigation).QueryInterface(Components.interfaces.nsILoadContext);
+     let persist = Cc['@mozilla.org/embedding/browser/nsWebBrowserPersist;1'].createInstance(Ci.nsIWebBrowserPersist);       
+     let xfer = Cc['@mozilla.org/transfer;1'].createInstance(Ci.nsITransfer);
+     let privacyContext = window.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation).QueryInterface(Ci.nsILoadContext);
      xfer.init(uri, fileURI, '', null, null, null, persist, false);  
      persist.progressListener = xfer;
      try { // Firefox 36+ (new parameter in Firefox 36: aReferrerPolicy)
@@ -84,8 +84,8 @@ saveFileAs: function(message) {
 
 getValue: function(message) {
   let pref = message.data.pref;
-  let settings = Components.classes['@mozilla.org/preferences-service;1'].
-    getService(Components.interfaces.nsIPrefService).
+  let settings = Cc['@mozilla.org/preferences-service;1'].
+    getService(Ci.nsIPrefService).
     getBranch('extensions.'+YoutubempEngine.packageName+'.');
   let prefType = settings.getPrefType(pref);
   return (prefType == settings.PREF_STRING)?settings.getCharPref(pref):null;
@@ -94,8 +94,8 @@ getValue: function(message) {
 setValue: function(message) {
   let pref = message.data.pref;
   let value = message.data.value;
-  let settings = Components.classes['@mozilla.org/preferences-service;1'].
-    getService(Components.interfaces.nsIPrefService).
+  let settings = Cc['@mozilla.org/preferences-service;1'].
+    getService(Ci.nsIPrefService).
     getBranch('extensions.'+YoutubempEngine.packageName+'.');  
   settings.setCharPref(pref, value);
 }

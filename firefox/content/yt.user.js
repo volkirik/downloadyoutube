@@ -3,8 +3,8 @@
 // @description Adds a button that lets you download YouTube videos.
 // @homepageURL https://github.com/gantt/downloadyoutube
 // @author Gantt
-// @version 1.8.7
-// @date 2016-03-19
+// @version 1.8.8
+// @date 2016-09-02
 // @namespace http://googlesystem.blogspot.com
 // @include http://www.youtube.com/*
 // @include https://www.youtube.com/*
@@ -31,12 +31,12 @@
 
 
 (function () {
-  var FORMAT_LABEL={'5':'FLV 240p','18':'MP4 360p','22':'MP4 720p','34':'FLV 360p','35':'FLV 480p','37':'MP4 1080p','38':'MP4 2160p','43':'WebM 360p','44':'WebM 480p','45':'WebM 720p','46':'WebM 1080p','135':'MP4 480p - no audio','137':'MP4 1080p - no audio','138':'MP4 2160p - no audio','139':'M4A 48kbps - audio','140':'M4A 128kbps - audio','141':'M4A 256kbps - audio','264':'MP4 1440p - no audio','266':'MP4 2160p - no audio','298':'MP4 720p60 - no audio','299':'MP4 1080p60 - no audio'};
-  var FORMAT_TYPE={'5':'flv','18':'mp4','22':'mp4','34':'flv','35':'flv','37':'mp4','38':'mp4','43':'webm','44':'webm','45':'webm','46':'webm','135':'mp4','137':'mp4','138':'mp4','139':'m4a','140':'m4a','141':'m4a','264':'mp4','266':'mp4','298':'mp4','299':'mp4'};
-  var FORMAT_ORDER=['5','18','34','43','35','135','44','22','298','45','37','299','46','264','38','266','139','140','141'];
-  var FORMAT_RULE={'flv':'max','mp4':'all','webm':'none','m4a':'max'};
+  var FORMAT_LABEL={'18':'MP4 360p','22':'MP4 720p','43':'WebM 360p','44':'WebM 480p','45':'WebM 720p','46':'WebM 1080p','135':'MP4 480p - no audio','137':'MP4 1080p - no audio','138':'MP4 2160p - no audio','140':'M4A 128kbps - audio','264':'MP4 1440p - no audio','266':'MP4 2160p - no audio','298':'MP4 720p60 - no audio','299':'MP4 1080p60 - no audio'};
+  var FORMAT_TYPE={'18':'mp4','22':'mp4','43':'webm','44':'webm','45':'webm','46':'webm','135':'mp4','137':'mp4','138':'mp4','140':'m4a','264':'mp4','266':'mp4','298':'mp4','299':'mp4'};
+  var FORMAT_ORDER=['18','43','135','44','22','298','45','137','299','46','264','138','266','140'];
+  var FORMAT_RULE={'mp4':'all','webm':'none','m4a':'all'};
   // all=display all versions, max=only highest quality version, none=no version  
-  // the default settings show all MP4 videos, the highest quality FLV and no WebM
+  // the default settings show all MP4 videos
   var SHOW_DASH_FORMATS=false;
   var BUTTON_TEXT={'ar':'تنزيل','cs':'Stáhnout','de':'Herunterladen','en':'Download','es':'Descargar','fr':'Télécharger','hi':'डाउनलोड','hu':'Letöltés','id':'Unduh','it':'Scarica','ja':'ダウンロード','ko':'내려받기','pl':'Pobierz','pt':'Baixar','ro':'Descărcați','ru':'Скачать','tr':'İndir','zh':'下载','zh-TW':'下載'};
   var BUTTON_TOOLTIP={'ar':'تنزيل هذا الفيديو','cs':'Stáhnout toto video','de':'Dieses Video herunterladen','en':'Download this video','es':'Descargar este vídeo','fr':'Télécharger cette vidéo','hi':'वीडियो डाउनलोड करें','hu':'Videó letöltése','id':'Unduh video ini','it':'Scarica questo video','ja':'このビデオをダウンロードする','ko':'이 비디오를 내려받기','pl':'Pobierz plik wideo','pt':'Baixar este vídeo','ro':'Descărcați acest videoclip','ru':'Скачать это видео','tr': 'Bu videoyu indir','zh':'下载此视频','zh-TW':'下載此影片'};
@@ -410,7 +410,7 @@ function run() {
     }
   }
   
-  addFromManifest('140', '141'); // replace fmt140 with fmt141 if found in manifest
+  addFromManifest();
   
   function downloadVideoNatively(e) {
     var elem=e.currentTarget;
@@ -425,8 +425,16 @@ function run() {
     return false;
   }
   
-  function addFromManifest(oldFormat, newFormat) { // find newFormat URL in manifest
-    if (videoManifestURL && videoURL[newFormat]==undefined && SHOW_DASH_FORMATS && FORMAT_RULE['m4a']!='none') {
+  function addFromManifest() { // add Dash URLs from manifest file
+    var formats=['137', '138', '140']; // 137=1080p, 138=4k, 140=m4a
+    var isNecessary=true;
+    for (var i=0;i<formats.length;i++) {
+      if (videoURL[formats[i]]) {
+        isNecessary=false;
+        break;
+      }
+    }
+    if (videoManifestURL && SHOW_DASH_FORMATS && isNecessary) {
       var matchSig=findMatch(videoManifestURL, /\/s\/([a-zA-Z0-9\.]+)\//i);
       if (matchSig) {
         var decryptedSig=decryptSignature(matchSig);
@@ -444,34 +452,29 @@ function run() {
           url:videoManifestURL, // check if URL exists
           onload:function(response) {
             if (response.readyState === 4 && response.status === 200 && response.responseText) {
-              var regexp = new RegExp('<BaseURL.+>(http[^<]+itag='+newFormat+'[^<]+)<\\/BaseURL>','i');
-              var matchURL=findMatch(response.responseText, regexp);
-              debug('DYVAM - Info: matchURL '+matchURL);
-              if (!matchURL) return;
-              matchURL=matchURL.replace(/&amp\;/g,'&');
-              if (FORMAT_RULE['m4a']=='max') {
-                for (var i=0;i<downloadCodeList.length;i++) {
-                  if (downloadCodeList[i].format==oldFormat) {
-                    downloadCodeList[i].format==newFormat;
-                    var downloadFMT=document.getElementById(LISTITEM_ID+oldFormat);
-                    downloadFMT.setAttribute('id', LISTITEM_ID+newFormat);
-                    downloadFMT.parentNode.setAttribute('href', matchURL);
-                    downloadCodeList[i].url=matchURL;
-                    downloadFMT.firstChild.nodeValue=FORMAT_LABEL[newFormat];
-                    addFileSize(matchURL, newFormat);
-                  }
-                }
-              } else if (FORMAT_RULE['m4a']=='all') {
+              debug('DYVAM - Info: maniestFileContents '+response.responseText);
+              var lastFormatFromList=downloadCodeList[downloadCodeList.length-1].format;
+              debug('DYVAM - Info: lastformat: '+lastFormatFromList);
+              for (var i=0;i<formats.length;i++) {
+                k=formats[i];
+                if (videoURL[k] || showFormat[k]==false) continue;
+                var regexp = new RegExp('<BaseURL>(http[^<]+itag\\/'+k+'[^<]+)<\\/BaseURL>','i');
+                var matchURL=findMatch(response.responseText, regexp);
+                debug('DYVAM - Info: matchURL itag= '+k+' url= '+matchURL);
+                if (!matchURL) continue;
+                matchURL=matchURL.replace(/&amp\;/g,'&');
+                // ...
                 downloadCodeList.push(
-                  {url:matchURL,sig:videoSignature[newFormat],format:newFormat,label:FORMAT_LABEL[newFormat]});
-                var downloadFMT=document.getElementById(LISTITEM_ID+oldFormat);
+                  {url:matchURL,sig:videoSignature[k],format:k,label:FORMAT_LABEL[k]});
+                var downloadFMT=document.getElementById(LISTITEM_ID+lastFormatFromList);
                 var clone=downloadFMT.parentNode.parentNode.cloneNode(true);
-                clone.firstChild.firstChild.setAttribute('id', LISTITEM_ID+newFormat);
+                clone.firstChild.firstChild.setAttribute('id', LISTITEM_ID+k);
                 clone.firstChild.setAttribute('href', matchURL);
                 downloadFMT.parentNode.parentNode.parentNode.appendChild(clone);
-                downloadFMT=document.getElementById(LISTITEM_ID+newFormat);
-                downloadFMT.firstChild.nodeValue=FORMAT_LABEL[newFormat];
-                addFileSize(matchURL, newFormat);
+                downloadFMT=document.getElementById(LISTITEM_ID+k);
+                downloadFMT.firstChild.nodeValue=FORMAT_LABEL[k];
+                addFileSize(matchURL, k);
+                lastFormatFromList=k;
               }
             }
           } 

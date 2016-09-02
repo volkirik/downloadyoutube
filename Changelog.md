@@ -1,5 +1,9 @@
 ## Download YouTube Videos as MP4: Changelog
 
+##### 1.8.8 (2016-09-02)
+* removed outdated formats
+* fixed manifest parsing (thanks, Elite2016) 
+
 ##### 1.8.7 (2016-03-19)
 * [only for the script and the Firefox extension]
 * replacing a function that's supposedly deprecated in Firefox 48 (thanks, Leo)

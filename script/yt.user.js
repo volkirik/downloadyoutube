@@ -35,9 +35,15 @@
   var FORMAT_LABEL={
     //WebM Format
     '43':'WebM 360p',
-    '44':'WebM 480p',
-    '45':'WebM 720p',
-    '46':'WebM 1080p',
+    '244':'WebM 480p',
+    '247':'WebM 720p',
+    '248':'WebM 1080p',
+    '271':'WebM 1440p',
+    '313':'WebM 2160p',
+    '302':'WebM 720p60',
+    '303':'WebM 1080p60',
+    '308':'WebM 1440p60',
+    '315':'WebM 2160p60',
     // MP4 Format
     '18':'MP4 360p',
     '22':'MP4 720p',
@@ -52,11 +58,17 @@
     '140':'M4A 128kbps - audio',
   };
   var FORMAT_TYPE={
-    // WebM
+    // WebM 
     '43':'webm',
-    '44':'webm',
-    '45':'webm',
-    '46':'webm',
+    '244':'webm',
+    '247':'webm',
+    '248':'webm',
+    '303':'webm',
+    '308':'webm',
+    '313':'webm',
+    '302':'webm',
+    '271':'webm',
+    '313':'webm',
     // MP4
     '18':'mp4',
     '22':'mp4',
@@ -72,6 +84,10 @@
   };
   var FORMAT_ORDER=[
     // List order.
+    '315',
+    '308',
+    '303',
+    '302',
     '18',
     '43',
     '135',

@@ -127,7 +127,7 @@
   start();
           
 function start() {
-  var pagecontainer=document.getElementById('page-container');
+  var pagecontainer=document.body;
   if (!pagecontainer) return;
   if (/^https?:\/\/www\.youtube.com\/watch\?/.test(window.location.href)) run();       
   var isAjax=/class[\w\s"'-=]+spf\-link/.test(pagecontainer.innerHTML);
@@ -160,8 +160,7 @@ function start() {
 }
 
 function onNodeInserted(e) { 
-    if (e && e.target && (e.target.id=='watch7-container' || 
-        e.target.id=='watch7-main-container')) { // old value: movie_player
+    if (e && e.target && e.target.id=='top') { // old value: movie_player
       run();
   }
 }
@@ -169,6 +168,9 @@ function onNodeInserted(e) {
 function run() {
   if (document.getElementById(CONTAINER_ID)) return; // check download container
   if (document.getElementById('p') && document.getElementById('vo')) return; // Feather not supported
+  if (!document.getElementById('menu-container')) {
+      setTimeout(run, 250);
+  }
 
   var videoID, videoFormats, videoAdaptFormats, videoManifestURL, scriptURL=null;
   var isSignatureUpdatingStarted=false;
@@ -185,9 +187,11 @@ function run() {
   // obtain video ID, formats map   
   
   var args=null;
-  var usw=(typeof this.unsafeWindow !== 'undefined')?this.unsafeWindow:window; // Firefox, Opera<15
+  var usw=(typeof this.unsafeWindow !== 'undefined')?this.unsafeWindow:this.window; // Firefox, Opera<15
   if (usw.ytplayer && usw.ytplayer.config && usw.ytplayer.config.args) {
     args=usw.ytplayer.config.args;
+  } else {
+      console.warn("ytplayer.config not found");
   }
   if (args) {
     videoID=args['video_id'];
@@ -199,7 +203,7 @@ function run() {
   if (usw.ytplayer && usw.ytplayer.config && usw.ytplayer.config.assets) {
     scriptURL=usw.ytplayer.config.assets.js;
   }  
-  
+
   if (videoID==null) { // unsafeWindow workaround (Chrome, Opera 15+)
     var buffer=document.getElementById(DEBUG_ID+'2');
     if (buffer) {
@@ -383,7 +387,7 @@ function run() {
   var newWatchPage=false;
   var parentElement=document.getElementById('watch7-action-buttons');
   if (parentElement==null) {
-    parentElement=document.getElementById('watch8-secondary-actions');
+    parentElement=document.getElementById('watch8-secondary-actions') || document.getElementById('menu-container');
     if (parentElement==null) {
       debug('DYVAM Error - No container for adding the download button. YouTube must have changed the code.');
       return;
@@ -442,6 +446,9 @@ function run() {
   }
   mainSpan.appendChild(listItems);
   var buttonElement=document.createElement('button');
+  buttonElement.addEventListener('click', function() {
+      listItems.style.display = listItems.style.display === 'block' ? 'none' : 'block';
+  });
   buttonElement.setAttribute('id', BUTTON_ID);
   if (newWatchPage) {
     buttonElement.setAttribute('class', 'yt-uix-button  yt-uix-button-size-default yt-uix-button-opacity yt-uix-tooltip');
@@ -571,6 +578,7 @@ function run() {
   }    
   
   function debug(str) {
+    console.log("[debug]", str);
     var debugElem=document.getElementById(DEBUG_ID);
     if (!debugElem) {
       debugElem=createHiddenElem('div', DEBUG_ID);
